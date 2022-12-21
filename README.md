@@ -67,8 +67,8 @@ Data in the format:
 [fg-production-master][] Backend errors: XXX
 [fg-production-master][] Invalid internal JWT tokens: XXX
 ...
-[fg-production-master][fg-production-sandbox-K1] Pipelines started: XXX
-[fg-production-master][fg-production-sandbox-K1] Pipelines started: XXX
+[fg-production-master][fg-production-sandbox-1] Pipelines started: XXX
+[fg-production-master][fg-production-sandbox-2] Pipelines started: XXX
 ```
 
 
