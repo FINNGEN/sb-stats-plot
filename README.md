@@ -29,10 +29,10 @@ Options:
 		Text size [default= 14]
 
 	--width=INTEGER
-		PDF document width [default= 23]
+		PDF document width (cm) [default= 23]
 
 	--height=INTEGER
-		PDF document height [default= 15]
+		PDF document height (cm) [default= 15]
 
 	-h, --help
 		Show this help message and exit
