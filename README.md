@@ -2,7 +2,7 @@
 
 Script for generating Sandbox usage statistics plots. Generates time series plots of total as well as sandbox-level usage statistics.
 
-Google Cloud Storage bucket storing data for generating plots: **gs://fg-reports_reports**. Note that data should be copied locally.
+Google Cloud Storage bucket storing data for generating plots: **gs://fg-reports_reports** which can be found by link https://console.cloud.google.com/storage/browser/fg-reports_reports. Note that data should be copied locally.
 
 ## Run using Docker container
 
