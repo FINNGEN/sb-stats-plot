@@ -33,9 +33,12 @@ Pass <SANDBOX_DATASTORE_PROJECT_ID> Google Cloud project ID which stores Datasto
 should be matched to the sandbox ids on the plot. **NOTE** that Datastore reading rights are required for the script to perform
 names matching. Otherwise, sandbox ids will be used for the plotting. 
 
+Put flag `--remove_unmatched TRUE` to remove Sandboxes with unmatched Sanbox Names from the report (default: FALSE), see the detailed user manual below.
+
 ```
 docker run -v ~/.config:/root/.config -v /PATH/TO/INPUT/DATA/FILES:/data \
-        -it eu.gcr.io/finngen-factory-staging/sb_reports:latest --path /data --out /data/plots.pdf --sb_project <SANDBOX_DATASTORE_PROJECT_ID>
+        -it eu.gcr.io/finngen-factory-staging/sb_reports:latest \
+		--path /data --out /data/plots.pdf --sb_project <SANDBOX_DATASTORE_PROJECT_ID> --remove_unmatched TRUE
 ```
 
 
@@ -79,8 +82,12 @@ Options:
 	--height=INTEGER
 		PDF document height (cm) [default= 15]
 	
-	--sb_project=CHARACTER
-        Google Cloud Project ID containing Datastore with 'SandboxConfing' entity storing Sandbox names.
+	 --sb_project=CHARACTER
+        Google Cloud Project ID containing Datastore with 'SandboxConfing' entity storing Sandbox names. 
+		If omitted, no Sandbox names matching is performed [default NULL].
+
+    --remove_unmatched=REMOVE_UNMATCHED
+        Remove Sandboxes with unmatched Sandbox IDs and Sanbox Name from the report [default FALSE].
 
 	-h, --help
 		Show this help message and exit
@@ -91,7 +98,10 @@ Example:
 
 
 ```
-Rscript generate_report.R --path data/ --out /path/to/your/output/plots.pdf --sb_project <SANDBOX_DATASTORE_PROJECT_ID>
+Rscript generate_report.R --path data/ \
+	--out /path/to/your/output/plots.pdf \
+	--sb_project <SANDBOX_DATASTORE_PROJECT_ID> \
+	--remove_unmatched TRUE
 
 
 List of files under data/ folder used in the example:

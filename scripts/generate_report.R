@@ -22,8 +22,11 @@ args <- list(
               help="PDF document height [default= %default]", metavar="integer"),
   make_option(c("--sb_project"), type="character",  default=NULL, 
               help=paste("Google Cloud Project ID containing Datastore with 'SandboxConfing' entity storing Sandbox names.",
-              "If omitted, no Sandbox names matching is performed."), 
-              metavar="character")
+                         "If omitted, no Sandbox names matching is performed [default %default]."), 
+              metavar="character"),
+  make_option(c("--remove_unmatched"), default=FALSE, 
+              help="Remove Sandboxes with unmatched Sanbox Name from the report [default %default].")
+
 ); 
 
 args_parser <- OptionParser(option_list=args);
@@ -45,6 +48,7 @@ text_size <- opt$size
 width <- opt$width
 height <- opt$height
 sb_project <- opt$sb_project
+remove_unmatched <- opt$remove_unmatched
 margin <- max(c(floor(width / 5), floor(height / 5)))
 
 # add nas to the data frame
@@ -116,23 +120,23 @@ dat$sb <- gsub("]", "", gsub(
   replacement = "", dat$name_full)
 )
 
-# add sandbox names
-if (is.null(sb_names)){
-  dat$sandbox_name <- dat$sb
-} else {
+# add sandbox names if specified
+if (remove_unmatched == TRUE & !is.null(sb_names)){
   dat$sandbox_name <- as.character(sb_names[dat$sb, 'sandbox_name'])
-  ids <- which(is.na(dat$sandbox_name))
+  index <- (is.na(dat$sandbox_name) & startsWith(dat$sb, "fg")) & !grepl("master", dat$sb)
+  ids <- which(!index)
+  dat <- dat[ids, ]
+} else if (remove_unmatched == FALSE & !is.null(sb_names)){
+  dat$sandbox_name <- as.character(sb_names[dat$sb, 'sandbox_name'])
+  ids <- which((is.na(dat$sandbox_name) & startsWith(dat$sb, "fg")) & !grepl("master", dat$sb))
   dat$sandbox_name[ids] <- paste0(dat$sb[ids], "-del")
+} else {
+  dat$sandbox_name <- dat$sb
 }
 
 # sandbox level
 sb <- dat[grep(pattern = "fg-production-sandbox", 
                x = dat$name_full), ]
-               
-tmp <- as.character(sb_names[sb$sb, 'sandbox_name'])
-cat("\n\nUnmatched sandbox names (will be marked as deleted):\n")
-write(unique(sb$sb[is.na(tmp)]), file="")
-cat("\n")
 
 # add sandbox number
 n <- do.call(rbind, strsplit(sb$sb, "-"))
@@ -146,8 +150,8 @@ message("Prepare data for the general-level description")
 tot <- dat[grep(pattern = "fg-production-sandbox", 
                 x = dat$name, invert = T), ]
 tot$name <- gsub("]", "", 
-  gsub(pattern = '\\[fg-production-master]\\[', 
-       replacement = "", tot$name_full))
+                 gsub(pattern = '\\[fg-production-master]\\[', 
+                      replacement = "", tot$name_full))
 tot$name[tot$name == ""] <- NA
 ids <- tot$name == "fg-production-master" | is.na(tot$name)
 master <- tot[which(ids), ]
@@ -161,8 +165,8 @@ g1 <- ggplot(master) +
            stat="identity", linewidth = 0.2) +
   theme_bw() + 
   theme(text = element_text(size = text_size),
-    axis.text.x = element_text(
-    angle = 90, vjust = 0.5, hjust=1)) +
+        axis.text.x = element_text(
+          angle = 90, vjust = 0.5, hjust=1)) +
   facet_wrap(~attr, scales = "free") + 
   ylab("") + xlab("") +
   scale_fill_discrete(na.value="gray92") + 
@@ -179,7 +183,7 @@ g2 <- ggplot(profiles) +
   theme(
     text = element_text(size = text_size),
     axis.text.x = element_text(
-    angle = 90, vjust = 0.5, hjust=1)) +
+      angle = 90, vjust = 0.5, hjust=1)) +
   facet_wrap(~name, ncol=5) + 
   ylab("") + xlab("") +
   scale_fill_discrete(na.value="gray92") + 
@@ -195,7 +199,7 @@ g3 <- ggplot(sb) +
   theme_bw() + theme(
     text = element_text(size = text_size),
     axis.text.x = element_text(
-    angle = 90, vjust = 0.5, hjust=1)) +
+      angle = 90, vjust = 0.5, hjust=1)) +
   facet_wrap(~attr, scales = "free") + 
   xlab("") + ylab("") + labs(fill = "SB numb.") + 
   ggtitle("Overview across terms") +
@@ -211,7 +215,7 @@ g4 <- ggplot(sb) +
   theme_bw() + theme(
     text = element_text(size = text_size),
     axis.text.x = element_text(
-    angle = 90, vjust = 0.5, hjust=1)) +
+      angle = 90, vjust = 0.5, hjust=1)) +
   facet_wrap(~sandbox_name) + ylab("") + xlab("") +
   labs(fill = "Type") + 
   ggtitle("Overview across sandboxes") +
@@ -228,7 +232,7 @@ g5 <- ggplot(sb) + geom_bar(
   theme(
     text = element_text(size = text_size),
     axis.text.x = element_text(
-    angle = 90, vjust = 0.5, hjust=1)) +
+      angle = 90, vjust = 0.5, hjust=1)) +
   facet_wrap(~sandbox_name, scales = "free_y") + 
   ylab("") + xlab("") + labs(fill = "Type") +
   ggtitle("Overview across sandboxes (free y axis)") +
@@ -290,13 +294,15 @@ for (a in attributes){
                  date_breaks  ="1 month")
   
   # table containing sb not in the plot
-  g_tbl <- tableGrob(tbl, theme=ttheme_minimal(base_size = text_size - 2))
+  theme <- ttheme_minimal(core = list(fg_params = list(hjust = 0, x = 0.1)), 
+                          base_size = text_size - 2)
+  
+  g_tbl <- tableGrob(tbl, theme=theme)
   
   # combined
   gfull <-  ggdraw() + draw_plot(g, 0, 0, 0.8, 1) + 
     draw_plot(g_tbl, 0.81, 0, 0.19, 1) + 
-    theme(plot.background = 
-            element_rect(fill="white", color = NA))
+    theme(plot.background = element_rect(fill="white", color = NA))
   
   # add list to the plot
   plist[[(length(plist) + 1)]] <- gfull
@@ -309,17 +315,10 @@ names(colors) <- attributes
 
 # aggregated plots 1/2
 message("Prepare plot 8: Aggregated plots 1/2")
-aggr <- aggregate(sb$value, list(sb$attr, sb$sb), mean)
+aggr <- aggregate(sb$value, list(sb$attr, sb$sandbox_name), mean)
+aggr$sb_name <- aggr$Group.2
 
 # add sandbox names
-if (is.null(sb_names)){
-  aggr$sb_name <- as.character(aggr$Group.2)
-} else {
-  nms <- as.character(sb_names[as.character(aggr$Group.2), 1])
-  ids <- which(is.na(nms))
-  nms[ids] <- as.character(aggr$Group.2[ids])
-  aggr$sb_name <- nms
-}
 ord <- aggr$sb_name[order((aggr$x), decreasing = T)]
 ord <- as.character(unique(ord))
 aggr$sb_name <- factor(aggr$sb_name, levels = ord)
@@ -329,7 +328,7 @@ g <- ggplot(aggr) +
   theme_bw() + theme(
     text = element_text(size = text_size),
     axis.text.x = element_text(angle = 90, 
-    vjust = 0.5, size=14, hjust=1)) +
+                               vjust = 0.5, size=14, hjust=1)) +
   labs(fill = "Type") + xlab("") + ylab("") +
   ggtitle("Aggregated stats over the time per sandbox") 
 
@@ -351,7 +350,7 @@ g <- ggplot(aggr) +
   theme(
     text = element_text(size = text_size),
     axis.text.x = element_text(angle = 90, 
-    vjust = 0.5, size=14, hjust=1)) +
+                               vjust = 0.5, size=14, hjust=1)) +
   labs(fill = "Type") + 
   ylab("log(value)") + xlab("") +
   ggtitle("Aggregated stats over the time per sandbox (logarithmic)")
@@ -383,7 +382,7 @@ for (x in sb_list){
           plot.margin = unit(c(t = margin, r = margin, 
                                b = margin, l = margin), "cm"),
           axis.text.x = element_text(size = text_size,
-          angle = 90, vjust = 0.5, hjust=1))
+                                     angle = 90, vjust = 0.5, hjust=1))
   
   # add to a list of plots
   plist[[(length(plist) + 1)]] <- g
