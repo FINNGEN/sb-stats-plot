@@ -2,6 +2,7 @@
 
 Script for generating Sandbox usage statistics plots. Generates time series plots of total as well as sandbox-level usage statistics.
 
+Google Cloud Storage bucket storing data for generating plots: **gs://fg-reports_reports**. Note that data should be copied locally.
 
 ## Run using Docker container
 
@@ -29,9 +30,7 @@ docker build --tag=sb_reports:latest -f docker/Dockerfile .
 
 **NOTE** that once the docker is mounted, you need to provide inputs to the script relative to the mounted directory, e.g. the output of the script in the example above can be specified as `--out /data/plots.pdf` and input as `--path /data`.
 
-Pass <SANDBOX_DATASTORE_PROJECT_ID> Google Cloud project ID which stores Datastore with a list of the sandboxes, the names of which 
-should be matched to the sandbox ids on the plot. **NOTE** that Datastore reading rights are required for the script to perform
-names matching. Otherwise, sandbox ids will be used for the plotting. 
+Pass <SANDBOX_DATASTORE_PROJECT_ID> Google Cloud project ID which stores Datastore with a list of sandboxes coonfigurations, the names of which should be matched to the sandbox ids on the plot. **NOTE** that Datastore reading rights are required for the script to perform names matching. Otherwise, sandbox ids will be used for the plotting. 
 
 Put flag `--remove_unmatched TRUE` to remove Sandboxes with unmatched Sanbox Names from the report (default: FALSE), see the detailed user manual below.
 
