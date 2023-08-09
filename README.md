@@ -4,29 +4,37 @@ Script for generating Sandbox usage statistics plots. Generates time series plot
 
 Google Cloud Storage bucket storing data for generating plots: **gs://fg-reports_reports** which can be found by link https://console.cloud.google.com/storage/browser/fg-reports_reports. Note that data should be copied locally.
 
-## Run using Docker container
-
-Run script using docker image. 
+## Run using Docker container from the Compute Engine VM
 
 **STEP 1**. Authenticate to gcloud application default:
 ```
 gcloud auth application-default login
 ```
 
-**STEP 2**. Pull the existing image:
+**STEP 2**. Authenticate docker using OAuth access token:
+```
+gcloud auth application-default print-access-token | sudo docker login -u oauth2accesstoken --password-stdin https://eu.gcr.io
+```
+
+**STEP 3**. Pull the existing image:
 
 ```
-docker pull eu.gcr.io/finngen-factory-staging/sb_reports:latest
+sudo docker pull eu.gcr.io/finngen-factory-staging/sb_reports:latest
 ```
 
 Alternatively, build a local docker image from the root of the git source repository using e.g. tag name `sb_reports:latest`:
 ```
-docker build --tag=sb_reports:latest -f docker/Dockerfile .
+sudo docker build --tag=sb_reports:latest -f docker/Dockerfile .
 ```
 
-**STEP 3**. Run the docker image by mounting:
-1. Your local path `/PATH/TO/INPUT/DATA/FILES` that stores sandbox statistics files to the `/data` path under the docker. 
-2. Your local configs path `~/.config` (default location of the Google Cloud configs) that stores gcloud application default configuration access token, to the `/root/.config` path under the docker. You can leave this parameter as-is: `-v ~/.config:/root/.config`.
+**STEP 4**. Copy sandbox monthly statistics files to some local directory `/PATH/TO/INPUT/DATA/FILES` from the bucket that contains summary reports `gs://fg-reports_reports/`. 
+```
+gsutil cp s://fg-reports_reports/* /PATH/TO/INPUT/DATA/FILES/
+```
+
+**STEP 5**. Run the docker image specifying the following mounting points:
+1. `/PATH/TO/INPUT/DATA/FILES:/data`: Mount your local path `/PATH/TO/INPUT/DATA/FILES` that stores sandbox statistics files downloaded on the previous step to the `/data` path under the docker. 
+2. `~/.config:/root/.config`: Mount your local configs path `~/.config` that stores gcloud application default configuration access token to the `/root/.config` path under the docker. You can leave this parameter as-is.
 
 **NOTE** that once the docker is mounted, you need to provide inputs to the script relative to the mounted directory, e.g. the output of the script in the example above can be specified as `--out /data/plots.pdf` and input as `--path /data`.
 
@@ -35,7 +43,7 @@ Pass <SANDBOX_DATASTORE_PROJECT_ID> Google Cloud project ID which stores Datasto
 Put flag `--remove_unmatched TRUE` to remove Sandboxes with unmatched Sanbox Names from the report (default: FALSE), see the detailed user manual below.
 
 ```
-docker run -v ~/.config:/root/.config -v /PATH/TO/INPUT/DATA/FILES:/data \
+sudo docker run -v ~/.config:/root/.config -v /PATH/TO/INPUT/DATA/FILES:/data \
         -it eu.gcr.io/finngen-factory-staging/sb_reports:latest \
 		--path /data --out /data/plots.pdf --sb_project <SANDBOX_DATASTORE_PROJECT_ID> --remove_unmatched TRUE
 ```
