@@ -45,7 +45,12 @@ Put flag `--remove_unmatched TRUE` to remove Sandboxes with unmatched Sanbox Nam
 ```
 sudo docker run -v ~/.config:/root/.config -v /PATH/TO/INPUT/DATA/FILES:/data \
         -it eu.gcr.io/finngen-factory-staging/sb_reports:latest \
-		--path /data --out /data/plots.pdf --sb_project <SANDBOX_DATASTORE_PROJECT_ID> --remove_unmatched TRUE
+		--path /data \
+		--out /data/plots.pdf \
+		--sb_project <SANDBOX_DATASTORE_PROJECT_ID> \
+		--remove_unmatched TRUE \
+		--start_date 2022-06-01 \
+		--end_date 2023-08-01 
 ```
 
 
@@ -74,35 +79,48 @@ Type `Rscript generate_report.R --help` for printing help message.
 Usage: generate_report.R [options]
 
 Options:
-	--path=CHARACTER
+	-d CHARACTER, --path=CHARACTER
 			Path to the location with files containing statistics gathered.
 
-	--sb_project=CHARACTER
-			Google Cloud Project ID containing Datastore with 'SandboxConfing' entity storing Sandbox names. If omitted, no Sandbox names matching is performed [default NULL].
+	-p CHARACTER, --sb_project=CHARACTER
+			Google Cloud Project ID containing Datastore with 'SandboxConfing' 
+			entity storing Sandbox names. If omitted, no Sandbox names matching is 
+			performed [default NULL].
 
-	--out=CHARACTER
+	-o CHARACTER, --out=CHARACTER
 			Full path to the output file. Default: "./plots_<TIMESTAMP>.pdf"
 
-	--size=INTEGER
+	-S INTEGER, --size=INTEGER
 			Text size [default= 18]
 
-	--width=INTEGER
+	-W INTEGER, --width=INTEGER
 			PDF document width [default= 25]
 
-	--height=INTEGER
+	-H INTEGER, --height=INTEGER
 			PDF document height [default= 15]
 
-	--remove_unmatched=REMOVE_UNMATCHED
-			Remove Sandboxes with unmatched Sanbox Name from the report [default FALSE].
+	-r LOGICAL, --remove_unmatched=LOGICAL
+			Remove Sandboxes with unmatched Sanbox Name from the report 
+			[default FALSE].
 
-	--plot_legacy_vm_profiles_separately=PLOT_LEGACY_VM_PROFILES_SEPARATELY
-			Plot summary of the legacy VM profiles on a separate plot (i.e. 'Basic Machine') [default FALSE].
+	-v LOGICAL, --plot_legacy_vm_profiles_separately=LOGICAL
+			Plot summary of the legacy VM profiles on a separate plot 
+			(i.e. 'Basic Machine') [default FALSE].
 
-	--add_nodata=ADD_NODATA
-			Add info on the side of the plot with sb names omitted from the plot if no stats data exists [default FALSE].
+	-i LOGICAL, --add_nodata=LOGICAL
+			Add info on the side of the plot with sb names omitted from 
+			the plot if no stats data exists [default FALSE].
 
-	--max_sb_plots_per_page=INTEGER
-			Max number of SB figures per page in the overview plots [default= 20]
+	-N INTEGER, --max_sb_plots_per_page=INTEGER
+			Max number of SB figures per page in the overview plots. 
+			Speciify if need to split into multiple pages. If not specified, 
+			all sb suubplots will be shown on a single plot.
+
+	-s CHARACTER, --start_date=CHARACTER
+			Start date, format: %Y-%m-%d, e.g. 2022-11-01
+
+	-e CHARACTER, --end_date=CHARACTER
+			End date, format: %Y-%m-%d, e.g. 2023-05-01
 
 	-h, --help
 			Show this help message and exit
@@ -115,12 +133,15 @@ Example:
 ```
 Rscript generate_report.R --path data/ \
 	--out /path/to/your/output/plots.pdf \
-	--sb_project <SANDBOX_DATASTORE_PROJECT_ID> 
-
+	--sb_project <SANDBOX_DATASTORE_PROJECT_ID> \
+	--remove_unmatched TRUE \
+	--start_date 2022-06-01 \
+	--end_date 2023-08-01 
 
 List of files under data/ folder used in the example:
 statistics_2022_10_20221101_043002.txt
 statistics_2022_11_20221201_043002.txt
+statistics_2022_12_20230101_043002.txt
 statistics_2022_1_20220225_104716.txt
 statistics_2022_2_20220301_043002.txt
 statistics_2022_2_20220301_081830.txt
@@ -131,6 +152,13 @@ statistics_2022_6_20220701_033003.txt
 statistics_2022_7_20220801_033002.txt
 statistics_2022_8_20220901_033003.txt
 statistics_2022_9_20221001_033002.txt
+statistics_2023_1_20230201_043002.txt
+statistics_2023_2_20230301_043003.txt
+statistics_2023_3_20230401_033002.txt
+statistics_2023_4_20230501_033002.txt
+statistics_2023_5_20230601_033002.txt
+statistics_2023_6_20230701_033001.txt
+statistics_2023_7_20230801_033002.txt
 ```
 
 Data in the format:

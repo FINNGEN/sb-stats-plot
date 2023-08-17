@@ -9,29 +9,40 @@ library("gridExtra")
 ts <- format(Sys.time(), "%d%m%yT%H%M")
 
 args <- list(
-  make_option(c("--path"), type="character", default=NULL, 
+  make_option(c("--path", "-d"), type="character", default=NULL, 
               help="Path to the location with files containing statistics gathered.", 
               metavar="character"),
-  make_option(c("--sb_project"), type="character",  default=NULL, 
-              help=paste("Google Cloud Project ID containing Datastore with 'SandboxConfing' entity storing Sandbox names.",
-                         "If omitted, no Sandbox names matching is performed [default %default]."), 
+  make_option(c("--sb_project", '-p'), type="character",  default=NULL, 
+              help="Google Cloud Project ID containing Datastore with 'SandboxConfing' 
+              entity storing Sandbox names. If omitted, no Sandbox names matching is 
+              performed [default %default].", metavar="character"),
+  make_option(c("--out", '-o'), type="character", default=paste0("plots_", ts, ".pdf"), 
+              help="Full path to the output file. Default: \"./plots_<TIMESTAMP>.pdf\"", 
               metavar="character"),
-  make_option(c("--out"), type="character", default=paste0("plots_", ts, ".pdf"), 
-              help="Full path to the output file. Default: \"./plots_<TIMESTAMP>.pdf\"", metavar="character"),
-  make_option(c("--size"), type="integer", default=18, 
+  make_option(c("--size", '-S'), type="integer", default=18, 
               help="Text size [default= %default]", metavar="integer"),
-  make_option(c("--width"), type="integer", default=25, 
+  make_option(c("--width", '-W'), type="integer", default=25, 
               help="PDF document width [default= %default]", metavar="integer"),
-  make_option(c("--height"), type="integer", default=15, 
+  make_option(c("--height", '-H'), type="integer", default=15, 
               help="PDF document height [default= %default]", metavar="integer"),
-  make_option(c("--remove_unmatched"), default=FALSE, type="logical",
-              help="Remove Sandboxes with unmatched Sanbox Name from the report [default %default]."),
-  make_option(c("--plot_legacy_vm_profiles_separately"), default=FALSE, type="logical",
-              help="Plot summary of the legacy VM profiles on a separate plot (i.e. 'Basic Machine') [default %default]."),
-  make_option(c("--add_nodata"), default=FALSE, type="logical",
-              help="Add info on the side of the plot with sb names omitted from the plot if no stats data exists [default %default]."),
-  make_option(c("--max_sb_plots_per_page"), type="integer", default=20, 
-              help="Max number of SB figures per page in the overview plots [default= %default]", metavar="integer")
+  make_option(c("--remove_unmatched", '-r'), default=FALSE, type="logical",
+              help="Remove Sandboxes with unmatched Sanbox Name from the report 
+              [default %default].", metavar="logical"),
+  make_option(c("--plot_legacy_vm_profiles_separately", '-v'), default=FALSE, type="logical",
+              help="Plot summary of the legacy VM profiles on a separate plot 
+              (i.e. 'Basic Machine') [default %default].", metavar="logical"),
+  make_option(c("--add_nodata", '-i'), default=FALSE, type="logical",
+              help="Add info on the side of the plot with sb names omitted from 
+              the plot if no stats data exists [default %default].", metavar="logical"),
+  make_option(c("--max_sb_plots_per_page", '-N'), type="integer", default=NULL,
+              help="Max number of SB figures per page in the overview plots. 
+              Speciify if need to split into multiple pages. If not specified, 
+              all sb suubplots will be shown on a single plot.", 
+              metavar="integer"),
+  make_option(c("--start_date", '-s'), type="character", default=NULL,
+              help="Start date, format: %Y-%m-%d, e.g. 2022-11-01", metavar="character"),
+  make_option(c("--end_date", '-e'), type="character", default=NULL,
+              help="End date, format: %Y-%m-%d, e.g. 2023-05-01", metavar="character")
 )
 
 
@@ -59,6 +70,9 @@ remove_unmatched <- opt$remove_unmatched
 plot_legacy_vm_profiles_separately <- opt$plot_legacy_vm_profiles_separately
 add_nodata <- opt$add_nodata
 max_plot_per_page <- opt$max_sb_plots_per_page
+start_date <- opt$start_date
+end_date <- opt$end_date
+
 
 TEXT_SIZE <- opt$size
 MARGIN <- max(c(floor(width / 10), floor(height / 10)))
@@ -165,7 +179,7 @@ filter_not_available_metrics <- function(dat){
   
 }
 
-format_data <- function(dat, sb_names){
+format_data <- function(dat, sb_names, start_date=NULL, end_date=NULL){
   
   message("Prepare data for the sandbox-level description")
   
@@ -189,9 +203,18 @@ format_data <- function(dat, sb_names){
   }
   
   # format date
-  dat$date_formatted <- format(dat$date,format="%b,%y")
+  dat$date_formatted <- format(dat$date,format="%b/%y")
   df_levels <- unique(dat$date_formatted)
   dat$date_formatted <- factor(dat$date_formatted, levels = df_levels)
+  
+  d <- unique(dat$date_formatted)
+  if(!is.null(start_date) & !is.null(end_date)){
+    dat <- dat[as.Date(dat$date) >= as.Date(start_date) & as.Date(dat$date) <= as.Date(end_date), ]
+    message("Removed dates out of the specified range. Months left for plotting: ", 
+            paste0(unique(dat$date_formatted), collapse = ", "))
+  }
+
+  return(dat)
   
   return(dat)
 }
@@ -350,8 +373,8 @@ plot_overview_across_sb <- function(sb, plot_id=NULL){
 }
 
 plot_overview_across_terms_sb <- function(
-    sb, max_plot_per_page = 20, 
-    add_free_y = FALSE,
+    sb, add_free_y = FALSE,
+    max_plot_per_page = NULL, 
     plot_id=NULL) {
   
   message("Prepare plot ", plot_id, ": Overview across terms in sb")
@@ -360,6 +383,12 @@ plot_overview_across_terms_sb <- function(
   x <- unique(sb[, c('sb', 'sandbox_name')])
   nr <- nrow(x)
   n <- ceiling(nr / 2)
+  postfix <- ""
+
+  if (is.null(max_plot_per_page)){
+    max_plot_per_page <- l + 1
+  }
+
   if (l > max_plot_per_page){
     y <- split(x, rep(1:ceiling(nr/n), each=n, length.out=nr))
   } else {
@@ -381,15 +410,20 @@ plot_overview_across_terms_sb <- function(
         legend.text = element_text(size = floor(TEXT_SIZE/1.2)),
         legend.margin = margin(LEGMAR, LEGMAR, LEGMAR, LEGMAR),
         text = element_text(size = TEXT_SIZE),
-        axis.text.x = element_text(size = TEXT_SIZE,
+        axis.text.x = element_text(size = floor(TEXT_SIZE/1.2),
           angle = 90, vjust = 0.5, hjust=1)) +
       facet_wrap(~sandbox_name) + ylab("") + xlab("") +
-      labs(fill = "Type") + 
-      ggtitle(paste0("Overview across terms (part ", k, ")")) 
+      labs(fill = "Type") 
     
     if (add_free_y){
-      p <- p + facet_wrap(~sandbox_name, scales = "free_y") + 
-        ggtitle(paste0("Overview across terms, not fixed y-axis (part ", k, ")")) 
+      p <- p + facet_wrap(~sandbox_name, scales= "free_y")
+      postfix <- " (fixed y-axis)" 
+    }
+
+    if (length(y) > 1){
+      p <- p + ggtitle(paste0("Overview across terms - part ", k, postfix)) 
+    } else {
+      p <- p + ggtitle(paste0("Overview across terms", postfix)) 
     }
     
     plist[[k]] <- p
@@ -696,7 +730,7 @@ dat <- read_and_combine_data(data_path)
 dat <- filter_not_available_metrics(dat)
 
 # extract attr, values, dates, etc.
-dat <- format_data(dat, sb_names)
+dat <- format_data(dat, sb_names, start_date, end_date)
 
 
 # Step 3:Split into sb and (vm) profiles -------------------------------------
