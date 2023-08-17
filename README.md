@@ -134,10 +134,12 @@ Example:
 ```
 Rscript generate_report.R --path data/ \
 	--out /path/to/your/output/plots.pdf \
-	--sb_project <SANDBOX_DATASTORE_PROJECT_ID> \
+	--sb_project  fg-production-master \
+	--size 22 \
+	--width 27 \
+	--height 15 \
 	--remove_unmatched TRUE \
-	--start_date 2022-06-01 \
-	--end_date 2023-08-01 \
+	--plot_legacy_vm_profiles_separately TRUE \
 	--add_nodata FALSE
 
 List of files under data/ folder used in the example:
