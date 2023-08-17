@@ -18,14 +18,14 @@ def main():
     except Exception as e:
         print("ERROR :: ", e)
         sys.exit(e)
-
-    # query the Datastore
-    query = ds.query(kind='SandboxConfig').fetch()
-    sb_list = list(query)    
-    lst = [','.join([sb['SandboxName'], sb['ProjectID']]) for sb in sb_list]
+    else:
+      # query the Datastore
+      query = ds.query(kind='SandboxConfig').fetch()
+      sb_list = list(query)    
+      lst = [','.join([sb['SandboxName'], sb['ProjectID']]) for sb in sb_list]
     
-    # print to the screen
-    print(';'.join(lst))
+      # print to the screen
+      print(';'.join(lst))
 
 
 if __name__ == '__main__':
