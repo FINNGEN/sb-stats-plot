@@ -19,7 +19,7 @@ gcloud auth application-default print-access-token | sudo docker login -u oauth2
 **STEP 3**. Pull the existing image:
 
 ```
-sudo docker pull eu.gcr.io/finngen-factory-staging/sb_reports:latest
+sudo docker pull eu.gcr.io/finngen-factory-staging/sb_reports:0.1
 ```
 
 Alternatively, build a local docker image from the root of the git source repository using e.g. tag name `sb_reports:latest`:
@@ -44,7 +44,7 @@ Put flag `--remove_unmatched TRUE` to remove Sandboxes with unmatched Sanbox Nam
 
 ```
 sudo docker run -v ~/.config:/root/.config -v /PATH/TO/INPUT/DATA/FILES:/data \
-        -it eu.gcr.io/finngen-factory-staging/sb_reports:latest \
+        -it eu.gcr.io/finngen-factory-staging/sb_reports:0.1 \
 		--path /data \
 		--out /data/plots.pdf \
 		--sb_project <SANDBOX_DATASTORE_PROJECT_ID> \
