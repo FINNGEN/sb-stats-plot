@@ -27,11 +27,11 @@ args <- list(
   make_option(c("--remove_unmatched"), default=FALSE, type="logical",
               help="Remove Sandboxes with unmatched Sanbox Name from the report [default %default]."),
   make_option(c("--plot_legacy_vm_profiles_separately"), default=FALSE, type="logical",
-              help="Plot legacy VM profiles on a separate plot (i.e. 'Basic Machine') [default %default]."),
+              help="Plot summary of the legacy VM profiles on a separate plot (i.e. 'Basic Machine') [default %default]."),
   make_option(c("--add_nodata"), default=FALSE, type="logical",
               help="Add info on the side of the plot with sb names omitted from the plot if no stats data exists [default %default]."),
   make_option(c("--max_sb_plots_per_page"), type="integer", default=20, 
-              help="PDF document width [default= %default]", metavar="integer")
+              help="Max number of SB figures per page in the overview plots [default= %default]", metavar="integer")
 )
 
 
