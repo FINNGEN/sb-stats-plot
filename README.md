@@ -74,39 +74,38 @@ Type `Rscript generate_report.R --help` for printing help message.
 Usage: generate_report.R [options]
 
 Options:
-        --path=CHARACTER
-                Path to the location with files containing statistics gathered.
+	--path=CHARACTER
+			Path to the location with files containing statistics gathered.
 
-        --out=CHARACTER
-                Full path to the output file. Default: "./plots_<TIMESTAMP>.pdf"
+	--sb_project=CHARACTER
+			Google Cloud Project ID containing Datastore with 'SandboxConfing' entity storing Sandbox names. If omitted, no Sandbox names matching is performed [default NULL].
 
-        --size=INTEGER
-                Text size [default= 18]
+	--out=CHARACTER
+			Full path to the output file. Default: "./plots_<TIMESTAMP>.pdf"
 
-        --width=INTEGER
-                PDF document width [default= 25]
+	--size=INTEGER
+			Text size [default= 18]
 
-        --height=INTEGER
-                PDF document height [default= 15]
+	--width=INTEGER
+			PDF document width [default= 25]
 
-        --sb_project=CHARACTER
-                Google Cloud Project ID containing Datastore with 'SandboxConfing' entity storing Sandbox names. If omitted, no Sandbox names matching is performed [default NULL].
+	--height=INTEGER
+			PDF document height [default= 15]
 
-        --remove_unmatched=REMOVE_UNMATCHED
-                Remove Sandboxes with unmatched Sanbox Name from the report [default FALSE].
+	--remove_unmatched=REMOVE_UNMATCHED
+			Remove Sandboxes with unmatched Sanbox Name from the report [default FALSE].
 
-        --plot_legacy_vm_profiles_separately=PLOT_LEGACY_VM_PROFILES_SEPARATELY
-                Plot summary of the legacy VM profiles on a separate plot (i.e. 'Basic Machine') [default FALSE].
+	--plot_legacy_vm_profiles_separately=PLOT_LEGACY_VM_PROFILES_SEPARATELY
+			Plot summary of the legacy VM profiles on a separate plot (i.e. 'Basic Machine') [default FALSE].
 
-        --add_nodata=ADD_NODATA
-                Add info on the side of the plot with sb names omitted from the plot if no stats data exists [default FALSE].
+	--add_nodata=ADD_NODATA
+			Add info on the side of the plot with sb names omitted from the plot if no stats data exists [default FALSE].
 
-        --max_sb_plots_per_page=INTEGER
-                Max number of SB figures per page in the overview plots [default= 20]
+	--max_sb_plots_per_page=INTEGER
+			Max number of SB figures per page in the overview plots [default= 20]
 
-        -h, --help
-                Show this help message and exit
-
+	-h, --help
+			Show this help message and exit
 
 ```
 
@@ -116,8 +115,7 @@ Example:
 ```
 Rscript generate_report.R --path data/ \
 	--out /path/to/your/output/plots.pdf \
-	--sb_project <SANDBOX_DATASTORE_PROJECT_ID> \
-	--remove_unmatched TRUE
+	--sb_project <SANDBOX_DATASTORE_PROJECT_ID> 
 
 
 List of files under data/ folder used in the example:
