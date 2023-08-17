@@ -209,7 +209,7 @@ format_data <- function(dat, sb_names, start_date=NULL, end_date=NULL){
   }
   
   # format date
-  dat$date_formatted <- format(dat$date,format="%b/%y")
+  dat$date_formatted <- format(dat$date,format="%b, %y")
   df_levels <- unique(dat$date_formatted)
   dat$date_formatted <- factor(dat$date_formatted, levels = df_levels)
   
