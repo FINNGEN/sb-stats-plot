@@ -130,12 +130,18 @@ get_sb_names <- function(sb_project) {
 }
 
 get_py_script_path <- function(){
+  script_dir <- get_execution_path()
+  py_script <- file.path(script_dir, "get_sb_name_datastore.py")
+  return(py_script)
+}
+
+
+get_execution_path <- function(){
   init_opt <- commandArgs(trailingOnly = FALSE)
   file_arg_name <- "--file="
   script_name <- sub(file_arg_name, "", init_opt[grep(file_arg_name, init_opt)])
   script_dir <- file.path(dirname(script_name))
-  py_script <- file.path(script_dir, "get_sb_name_datastore.py")
-  return(py_script)
+  return(script_dir)
 }
 
 read_and_combine_data <- function(data_path){
@@ -831,8 +837,10 @@ ggsave(
 
 print(warnings())
 
-if (file.exists("Rplots.pdf")){
-  res <- file.remove("Rplots.pdf")
+cpath <- get_execution_path()
+rplot <- file.path(cpath, "Rplots.pdf")
+if (file.exists(rplot)){
+  res <- file.remove(rplot)
 }
 
 cat("\n\nSaved reports to", fout, "\n")

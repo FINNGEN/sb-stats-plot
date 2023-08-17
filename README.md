@@ -50,7 +50,8 @@ sudo docker run -v ~/.config:/root/.config -v /PATH/TO/INPUT/DATA/FILES:/data \
 		--sb_project <SANDBOX_DATASTORE_PROJECT_ID> \
 		--remove_unmatched TRUE \
 		--start_date 2022-06-01 \
-		--end_date 2023-08-01 
+		--end_date 2023-08-01 \
+		--add_nodata FALSE
 ```
 
 
@@ -136,7 +137,8 @@ Rscript generate_report.R --path data/ \
 	--sb_project <SANDBOX_DATASTORE_PROJECT_ID> \
 	--remove_unmatched TRUE \
 	--start_date 2022-06-01 \
-	--end_date 2023-08-01 
+	--end_date 2023-08-01 \
+	--add_nodata FALSE
 
 List of files under data/ folder used in the example:
 statistics_2022_10_20221101_043002.txt
